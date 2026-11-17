@@ -1,41 +1,157 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>AgroMart Agriculture Store</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="theme-color" content="#176b35">
+    <meta name="description" content="AgroMart Agriculture Shopping">
+
+    <title>AgroMart | Agriculture Shopping</title>
+
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" href="./icon-192.png">
+    <link rel="stylesheet" href="./style.css">
 </head>
+
 <body>
 
 <header>
-    <h1>🌱 AgroMart</h1>
-    <p>Your Online Agriculture Shopping Store</p>
+    <button class="logo" onclick="home()">🌱 AgroMart</button>
+
+    <form id="searchForm">
+        <input
+            id="search"
+            placeholder="Search seeds, fertilizers, pesticides..."
+        >
+        <button>🔍</button>
+    </form>
+
+    <div>
+        <button onclick="account()">
+            👤 <span id="userLabel">Login</span>
+        </button>
+
+        <button onclick="cartPage()">
+            🛒 Cart (<span id="cartCount">0</span>)
+        </button>
+
+        <button id="install" hidden>Install app</button>
+    </div>
 </header>
 
-<nav>
-    <a href="#">Home</a>
-    <a href="#products">Products</a>
-    <a href="#about">About Us</a>
-</nav>
+<nav id="nav"></nav>
 
-<section class="banner">
-    <h2>Welcome to AgroMart</h2>
-    <p>Buy Seeds, Fertilizers and Pesticides Online</p>
-</section>
+<main>
 
-<section id="products">
-    <h2>Our Products</h2>
-    <div id="productList"></div>
-</section>
+    <!-- HOME PAGE -->
+    <section id="home" class="view">
 
-<section id="about">
-    <h2>About AgroMart</h2>
-    <p>We provide quality agriculture products for farmers.</p>
-</section>
+        <div class="hero">
+            <div>
+                <small>AGRICULTURE MARKETPLACE</small>
+
+                <h1>
+                    Grow better.<br>
+                    <span>Shop smarter.</span>
+                </h1>
+
+                <p>
+                    Seeds, fertilizers, plant care and farming
+                    essentials in one place.
+                </p>
+
+                <button onclick="document.querySelector('#products').scrollIntoView()">
+                    Shop now →
+                </button>
+            </div>
+
+            <div class="heroEmoji">🌱🌾</div>
+        </div>
+
+        <h2>Shop by category</h2>
+
+        <div id="cats" class="cats"></div>
+
+        <div class="row">
+            <div>
+                <h2 id="heading">All products</h2>
+                <small id="count"></small>
+            </div>
+
+            <select id="sort">
+                <option value="featured">Recommended</option>
+                <option value="low">Price low to high</option>
+                <option value="high">Price high to low</option>
+                <option value="name">Name A-Z</option>
+            </select>
+        </div>
+
+        <div id="products" class="products"></div>
+
+        <p id="empty" hidden>No products found.</p>
+
+    </section>
+
+    <!-- PRODUCT DETAILS -->
+    <section id="detail" class="view" hidden></section>
+
+    <!-- SHOPPING CART -->
+    <section id="cart" class="view narrow" hidden></section>
+
+    <!-- PRODUCT QUANTITY -->
+    <section id="quantity" class="view narrow" hidden></section>
+
+    <!-- ACCOUNT -->
+    <section id="account" class="view narrow" hidden></section>
+
+    <!-- CHECKOUT -->
+    <section id="checkout" class="view narrow" hidden></section>
+
+    <!-- INVOICE -->
+    <section id="invoice" class="view narrow" hidden></section>
+
+</main>
 
 <footer>
-    <p>© 2026 AgroMart. All Rights Reserved.</p>
+    <h2>🌱 AgroMart</h2>
+
+    <p>Supporting farmers, growing the future.</p>
+
+    <small>
+        © <span id="year"></span> AgroMart
+        · Sample catalogue for demonstration
+    </small>
+
+    <p id="network"></p>
 </footer>
 
-<script src="script.js"></script>
+<!-- PURCHASE CONFIRMATION -->
+<div id="modal" class="modal" hidden>
+
+    <div class="dialog">
+
+        <h2>Confirm purchase?</h2>
+
+        <p id="modalText"></p>
+
+        <button onclick="confirmBuy(true)">
+            Yes, continue
+        </button>
+
+        <button class="light" onclick="confirmBuy(false)">
+            No
+        </button>
+
+    </div>
+
+</div>
+
+<div id="toast" class="toast"></div>
+
+<!-- JAVASCRIPT FILES -->
+<script src="./products.js"></script>
+<script src="./app.js"></script>
+
 </body>
 </html>
