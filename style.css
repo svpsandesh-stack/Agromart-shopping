@@ -1,69 +1,560 @@
+/* =================================
+   AGROMART WEBSITE DESIGN
+================================= */
+
+* {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
+    background: #f6f8f4;
+    color: #203326;
     font-family: Arial, sans-serif;
-    background: #f1f8ed;
-    color: #263528;
 }
 
-header {
-    background: #176b35;
-    color: white;
-    text-align: center;
-    padding: 25px;
-}
-
-nav {
-    background: #d9edda;
-    padding: 15px;
-    text-align: center;
-}
-
-nav a {
-    color: #176b35;
-    text-decoration: none;
-    font-weight: bold;
-    margin: 15px;
-}
-
-.banner {
-    background: #65a94d;
-    color: white;
-    text-align: center;
-    padding: 50px 15px;
-}
-
-section {
-    padding: 25px;
-    text-align: center;
-}
-
-#productList {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 20px;
-}
-
-.product {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    width: 200px;
-    box-shadow: 0 2px 8px #ccc;
+button,
+select,
+input,
+textarea {
+    font: inherit;
 }
 
 button {
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 14px;
     background: #176b35;
     color: white;
+    font-weight: bold;
+}
+
+button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* HEADER */
+
+header {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: white;
+    border-bottom: 1px solid #e2e9df;
+    padding: 13px 4%;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.logo {
+    font-size: 23px;
+    background: none;
+    color: #176b35;
+    padding: 5px;
+}
+
+/* SEARCH BAR */
+
+#searchForm {
+    display: flex;
+    flex: 1;
+    max-width: 650px;
+    background: #f0f4ef;
+    border-radius: 9px;
+    overflow: hidden;
+}
+
+#search {
+    border: 0;
+    background: transparent;
+    padding: 12px;
+    width: 100%;
+    outline: 0;
+}
+
+#searchForm button {
+    border-radius: 0;
+}
+
+header > div {
+    display: flex;
+    gap: 7px;
+}
+
+header > div button {
+    font-size: 12px;
     padding: 10px;
-    border: none;
-    border-radius: 5px;
+}
+
+/* CATEGORY NAVIGATION */
+
+nav {
+    display: flex;
+    gap: 8px;
+    padding: 12px 4%;
+    background: white;
+    overflow: auto;
+}
+
+nav button {
+    white-space: nowrap;
+    background: #edf4eb;
+    color: #23452b;
+    border-radius: 22px;
+}
+
+nav button.active,
+nav button:hover {
+    background: #176b35;
+    color: white;
+}
+
+/* MAIN CONTAINER */
+
+main {
+    max-width: 1300px;
+    margin: auto;
+    padding: 22px 4% 55px;
+}
+
+/* HOME BANNER */
+
+.hero {
+    background: linear-gradient(
+        110deg,
+        #e5f2df,
+        #cbe5bd
+    );
+
+    border-radius: 20px;
+    padding: 42px 6%;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    min-height: 280px;
+}
+
+.hero h1 {
+    font-size: 48px;
+    line-height: 1.05;
+    margin: 10px 0;
+    color: #153d24;
+}
+
+.hero h1 span {
+    color: #278143;
+}
+
+.hero p {
+    max-width: 470px;
+    color: #4d6651;
+    line-height: 1.6;
+}
+
+.heroEmoji {
+    font-size: 100px;
+}
+
+/* CATEGORY CARDS */
+
+.cats {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin: 18px 0 35px;
+}
+
+.cat {
+    background: white;
+    color: #23452b;
+    border: 1px solid #e0e9dd;
+    padding: 20px 8px;
+    border-radius: 13px;
+}
+
+.cat b {
+    display: block;
+    font-size: 30px;
+    margin-bottom: 8px;
+}
+
+/* PRODUCT HEADING */
+
+.row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.row h2 {
+    margin-bottom: 5px;
+}
+
+.row select {
+    padding: 10px;
+    border: 1px solid #dce5da;
+    border-radius: 8px;
+    background: white;
+}
+
+/* PRODUCT GRID */
+
+.products {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-top: 18px;
+}
+
+/* PRODUCT CARD */
+
+.card {
+    background: white;
+    border: 1px solid #e1e9df;
+    border-radius: 13px;
+    overflow: hidden;
+}
+
+/* PRODUCT IMAGE */
+
+.pic {
+    height: 130px;
+    background: #edf5e9;
+
+    display: grid;
+    place-items: center;
+
+    font-size: 58px;
     cursor: pointer;
 }
 
-footer {
-    background: #176b35;
-    color: white;
-    text-align: center;
+/* PRODUCT INFORMATION */
+
+.info {
+    padding: 13px;
+}
+
+.info h3 {
+    font-size: 15px;
+    min-height: 35px;
+    cursor: pointer;
+}
+
+.muted,
+small {
+    color: #708074;
+}
+
+.price {
+    font-size: 18px;
+    font-weight: bold;
+    color: #176b35;
+}
+
+/* PRODUCT BUTTONS */
+
+.actions {
+    display: flex;
+    gap: 7px;
+    margin-top: 12px;
+}
+
+.actions button {
+    flex: 1;
+    font-size: 12px;
+    padding: 9px 5px;
+}
+
+.light {
+    background: #edf4eb;
+    color: #176b35;
+}
+
+/* PRODUCT DETAILS */
+
+.view {
+    min-height: 400px;
+}
+
+.narrow {
+    max-width: 800px;
+    margin: 10px auto;
+}
+
+.panel,
+.form,
+.bill {
+    background: white;
+    border: 1px solid #e1e9df;
+    border-radius: 13px;
     padding: 20px;
+    margin: 14px 0;
+}
+
+.back {
+    background: none;
+    color: #176b35;
+    padding: 10px 0;
+}
+
+.detail {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 22px;
+
+    background: white;
+    padding: 20px;
+    border-radius: 14px;
+}
+
+.detailPic {
+    background: #edf5e9;
+    border-radius: 12px;
+
+    display: grid;
+    place-items: center;
+
+    font-size: 110px;
+    min-height: 260px;
+}
+
+/* INPUT FIELDS */
+
+.detail input,
+.form input,
+.form textarea,
+.quantityInput {
+    width: 100%;
+    padding: 12px;
+
+    border: 1px solid #d8e2d5;
+    border-radius: 8px;
+
+    margin: 7px 0 14px;
+}
+
+.form {
+    display: grid;
+    gap: 8px;
+}
+
+.form textarea {
+    min-height: 90px;
+}
+
+/* BILL AND CHECKOUT */
+
+.line {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+
+    padding: 10px 0;
+    border-bottom: 1px solid #e7ece5;
+}
+
+.total {
+    font-size: 19px;
+    font-weight: bold;
+    color: #176b35;
+}
+
+.warning {
+    background: #fff5d9;
+    color: #72571b;
+
+    padding: 12px;
+    border-radius: 8px;
+
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.success {
+    background: #eaf6e9;
+    padding: 14px;
+    border-radius: 9px;
+}
+
+/* PAYMENT OPTIONS */
+
+.radio {
+    display: block;
+    padding: 10px;
+    border: 1px solid #e1e9df;
+    border-radius: 8px;
+    margin: 8px 0;
+}
+
+.radio input {
+    width: auto;
+    margin: 0 8px 0 0;
+}
+
+/* CONFIRMATION POPUP */
+
+.modal {
+    position: fixed;
+    inset: 0;
+
+    background: #0009;
+
+    display: grid;
+    place-items: center;
+
+    z-index: 10;
+    padding: 15px;
+}
+
+.dialog {
+    background: white;
+    border-radius: 14px;
+    padding: 25px;
+
+    max-width: 370px;
+    width: 100%;
+
+    text-align: center;
+}
+
+/* NOTIFICATION */
+
+.toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    background: #153d24;
+    color: white;
+
+    padding: 12px 18px;
+    border-radius: 8px;
+
+    display: none;
+    z-index: 20;
+}
+
+.toast.show {
+    display: block;
+}
+
+/* FOOTER */
+
+footer {
+    text-align: center;
+    background: #153d24;
+    color: white;
+    padding: 28px;
+}
+
+footer p {
+    color: #d2e3d3;
+}
+
+/* HIDDEN ELEMENTS */
+
+[hidden] {
+    display: none !important;
+}
+
+/* TABLET RESPONSIVE */
+
+@media(max-width: 850px) {
+
+    .cats {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .products {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+}
+
+/* MOBILE RESPONSIVE */
+
+@media(max-width: 580px) {
+
+    header {
+        gap: 8px;
+    }
+
+    #searchForm {
+        order: 3;
+        flex-basis: 100%;
+    }
+
+    .hero {
+        padding: 25px;
+        min-height: 250px;
+    }
+
+    .hero h1 {
+        font-size: 36px;
+    }
+
+    .heroEmoji {
+        font-size: 55px;
+    }
+
+    .cats {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .products {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .pic {
+        height: 105px;
+    }
+
+    .detail {
+        grid-template-columns: 1fr;
+    }
+
+    .detailPic {
+        min-height: 180px;
+    }
+
+    .actions {
+        flex-direction: column;
+    }
+
+}
+
+/* PRINT INVOICE */
+
+@media print {
+
+    header,
+    nav,
+    footer,
+    .back,
+    .printHide {
+        display: none !important;
+    }
+
+    body {
+        background: white;
+    }
+
+    .view:not(#invoice) {
+        display: none !important;
+    }
+
+    #invoice {
+        display: block !important;
+    }
+
 }
