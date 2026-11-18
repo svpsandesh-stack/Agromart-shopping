@@ -1,13 +1,19 @@
 {
+  "id": "./",
   "name": "AgroMart - Agriculture Shopping",
   "short_name": "AgroMart",
-  "description": "Online shopping for seeds, fertilizers, pesticides and farming products.",
-  "start_url": "./index.html",
+  "description": "Buy seeds, fertilizers and pesticides online.",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#f5f8f2",
-  "theme_color": "#176b3a",
+  "background_color": "#f7faf7",
+  "theme_color": "#176b35",
+  "categories": [
+    "shopping",
+    "lifestyle",
+    "business"
+  ],
   "icons": [
     {
       "src": "./icon-192.png",
