@@ -1,300 +1,271 @@
-// ========================================
-// AGROMART PRODUCT DATABASE
-// 200 PRODUCTS IN EACH CATEGORY
-// TOTAL: 1200 SAMPLE LISTINGS
-// ========================================
+/* =====================================
+   AGROMART - PRODUCT DATABASE
+===================================== */
 
-const CATEGORY_CONFIG = [
+const PRODUCTS = [
 
-    // 1. SEEDS
-    {
-        name: "Seeds",
-        emoji: "🌾",
-        base: 45,
-        unit: "kg",
-        stock: 240,
+  // SEEDS
+  {
+    id: 1,
+    name: "Rice Seeds",
+    category: "Seeds",
+    price: 80,
+    unit: "kg",
+    stock: 100,
+    emoji: "🌾",
+    description: "High quality rice seeds for farming."
+  },
+  {
+    id: 2,
+    name: "Wheat Seeds",
+    category: "Seeds",
+    price: 65,
+    unit: "kg",
+    stock: 100,
+    emoji: "🌾",
+    description: "Quality wheat seeds."
+  },
+  {
+    id: 3,
+    name: "Maize Seeds",
+    category: "Seeds",
+    price: 90,
+    unit: "kg",
+    stock: 100,
+    emoji: "🌽",
+    description: "High yielding maize seeds."
+  },
+  {
+    id: 4,
+    name: "Tomato Seeds",
+    category: "Seeds",
+    price: 120,
+    unit: "packet",
+    stock: 50,
+    emoji: "🍅",
+    description: "Quality tomato seeds."
+  },
+  {
+    id: 5,
+    name: "Chilli Seeds",
+    category: "Seeds",
+    price: 150,
+    unit: "packet",
+    stock: 50,
+    emoji: "🌶️",
+    description: "Good quality chilli seeds."
+  },
+  {
+    id: 6,
+    name: "Cotton Seeds",
+    category: "Seeds",
+    price: 180,
+    unit: "kg",
+    stock: 70,
+    emoji: "🌱",
+    description: "Cotton seeds for agriculture."
+  },
+  {
+    id: 7,
+    name: "Groundnut Seeds",
+    category: "Seeds",
+    price: 110,
+    unit: "kg",
+    stock: 80,
+    emoji: "🥜",
+    description: "Groundnut seeds for cultivation."
+  },
+  {
+    id: 8,
+    name: "Soybean Seeds",
+    category: "Seeds",
+    price: 100,
+    unit: "kg",
+    stock: 80,
+    emoji: "🌱",
+    description: "Quality soybean seeds."
+  },
 
-        items: [
-            "Rice Seeds",
-            "Wheat Seeds",
-            "Maize Seeds",
-            "Tomato Seeds",
-            "Chilli Seeds",
-            "Cotton Seeds",
-            "Groundnut Seeds",
-            "Soybean Seeds",
-            "Onion Seeds",
-            "Okra Seeds",
-            "Cucumber Seeds",
-            "Watermelon Seeds",
-            "Sunflower Seeds",
-            "Ragi Seeds",
-            "Bajra Seeds",
-            "Mustard Seeds",
-            "Cabbage Seeds",
-            "Brinjal Seeds",
-            "Carrot Seeds",
-            "Beans Seeds"
-        ]
-    },
+  // FERTILIZERS
+  {
+    id: 9,
+    name: "Urea Fertilizer",
+    category: "Fertilizers",
+    price: 270,
+    unit: "bag",
+    stock: 100,
+    emoji: "🧪",
+    description: "Nitrogen fertilizer."
+  },
+  {
+    id: 10,
+    name: "DAP Fertilizer",
+    category: "Fertilizers",
+    price: 450,
+    unit: "bag",
+    stock: 80,
+    emoji: "🌿",
+    description: "Phosphorus based fertilizer."
+  },
+  {
+    id: 11,
+    name: "NPK Fertilizer",
+    category: "Fertilizers",
+    price: 350,
+    unit: "kg",
+    stock: 100,
+    emoji: "🌱",
+    description: "Balanced plant nutrition."
+  },
+  {
+    id: 12,
+    name: "Potash Fertilizer",
+    category: "Fertilizers",
+    price: 300,
+    unit: "kg",
+    stock: 70,
+    emoji: "🌿",
+    description: "Potassium fertilizer."
+  },
+  {
+    id: 13,
+    name: "Organic Manure",
+    category: "Fertilizers",
+    price: 150,
+    unit: "bag",
+    stock: 100,
+    emoji: "🍃",
+    description: "Organic soil improvement."
+  },
+  {
+    id: 14,
+    name: "Vermicompost",
+    category: "Fertilizers",
+    price: 180,
+    unit: "bag",
+    stock: 70,
+    emoji: "🌱",
+    description: "Natural organic manure."
+  },
+  {
+    id: 15,
+    name: "Neem Cake",
+    category: "Fertilizers",
+    price: 180,
+    unit: "kg",
+    stock: 70,
+    emoji: "🍃",
+    description: "Neem based organic fertilizer."
+  },
+  {
+    id: 16,
+    name: "Bone Meal",
+    category: "Fertilizers",
+    price: 220,
+    unit: "kg",
+    stock: 50,
+    emoji: "🌿",
+    description: "Phosphorus rich soil amendment."
+  },
 
-    // 2. FERTILIZERS
-    {
-        name: "Fertilizers",
-        emoji: "🧪",
-        base: 90,
-        unit: "kg",
-        stock: 180,
+  // PESTICIDES
+  {
+    id: 17,
+    name: "Neem Oil",
+    category: "Pesticides",
+    price: 200,
+    unit: "litre",
+    stock: 50,
+    emoji: "🍃",
+    description: "Neem based pest management product."
+  },
+  {
+    id: 18,
+    name: "Bio Pesticide",
+    category: "Pesticides",
+    price: 250,
+    unit: "litre",
+    stock: 50,
+    emoji: "🧴",
+    description: "Biological pest management product."
+  },
+  {
+    id: 19,
+    name: "Plant Fungicide",
+    category: "Pesticides",
+    price: 300,
+    unit: "kg",
+    stock: 40,
+    emoji: "🧪",
+    description: "For management of plant fungal diseases."
+  },
+  {
+    id: 20,
+    name: "Insect Control",
+    category: "Pesticides",
+    price: 280,
+    unit: "litre",
+    stock: 40,
+    emoji: "🌱",
+    description: "Crop insect management product."
+  },
 
-        items: [
-            "Urea Fertilizer",
-            "DAP Fertilizer",
-            "NPK 19:19:19",
-            "Potash Fertilizer",
-            "Organic Compost",
-            "Vermicompost",
-            "Neem Cake",
-            "Bone Meal",
-            "Micronutrient Mix",
-            "Zinc Sulphate",
-            "Magnesium Sulphate",
-            "Bio Fertilizer",
-            "Seaweed Granules",
-            "Phosphate Fertilizer",
-            "Gypsum",
-            "Sulphur",
-            "Calcium Nitrate",
-            "Rock Phosphate",
-            "City Compost",
-            "Humic Granules"
-        ]
-    },
+  // SOIL AND MANURE
+  {
+    id: 21,
+    name: "Garden Soil",
+    category: "Soil & Manure",
+    price: 100,
+    unit: "bag",
+    stock: 80,
+    emoji: "🪴",
+    description: "Soil for gardening."
+  },
+  {
+    id: 22,
+    name: "Cocopeat",
+    category: "Soil & Manure",
+    price: 120,
+    unit: "block",
+    stock: 60,
+    emoji: "🌱",
+    description: "Growing medium for plants."
+  },
 
-    // 3. PESTICIDES
-    {
-        name: "Pesticides",
-        emoji: "🍃",
-        base: 110,
-        unit: "litre",
-        stock: 95,
+  // FARMING TOOLS
+  {
+    id: 23,
+    name: "Water Sprayer",
+    category: "Farming Tools",
+    price: 350,
+    unit: "piece",
+    stock: 30,
+    emoji: "🚿",
+    description: "Sprayer for agricultural use."
+  },
+  {
+    id: 24,
+    name: "Garden Hoe",
+    category: "Farming Tools",
+    price: 250,
+    unit: "piece",
+    stock: 30,
+    emoji: "🔨",
+    description: "Tool for soil preparation."
+  },
 
-        items: [
-            "Neem Based Plant Care",
-            "Bio Insect Control",
-            "Copper Fungicide",
-            "Yellow Sticky Trap",
-            "Blue Sticky Trap",
-            "Plant Disease Care",
-            "Mite Control",
-            "Weed Control",
-            "Trichoderma Bio Control",
-            "Beauveria Bio Control",
-            "Bacillus Bio Control",
-            "Fruit Fly Trap",
-            "Seed Treatment",
-            "Botanical Crop Care",
-            "Fungal Disease Care",
-            "Insect Monitoring Trap",
-            "Bio Larvicide",
-            "Plant Protection Soap",
-            "Horticulture Oil",
-            "Pheromone Trap"
-        ]
-    },
-
-    // 4. FARMING TOOLS
-    {
-        name: "Farming Tools",
-        emoji: "🛠️",
-        base: 75,
-        unit: "piece",
-        stock: 60,
-
-        items: [
-            "Hand Sprayer",
-            "Knapsack Sprayer",
-            "Garden Hoe",
-            "Hand Trowel",
-            "Pruning Shear",
-            "Harvesting Knife",
-            "Seed Dibber",
-            "Weeding Fork",
-            "Garden Rake",
-            "Watering Can",
-            "Hand Cultivator",
-            "Sickle",
-            "Soil Auger",
-            "Farming Gloves",
-            "Harvest Basket",
-            "Measuring Cup",
-            "Plant Support",
-            "Nursery Tray",
-            "Drip Punch Tool",
-            "Farm Tool Kit"
-        ]
-    },
-
-    // 5. SOIL AND MANURE
-    {
-        name: "Soil & Manure",
-        emoji: "🌱",
-        base: 35,
-        unit: "kg",
-        stock: 300,
-
-        items: [
-            "Red Soil",
-            "Garden Soil",
-            "Cocopeat",
-            "Vermicompost",
-            "Farmyard Manure",
-            "Potting Mix",
-            "Perlite",
-            "Expanded Clay",
-            "Leaf Compost",
-            "Neem Compost",
-            "Coir Pith",
-            "Seedling Mix",
-            "Mulching Material",
-            "Organic Soil Mix",
-            "Biochar",
-            "Sand Mix",
-            "Compost Mix",
-            "Raised Bed Mix",
-            "Worm Castings",
-            "Soil Conditioner"
-        ]
-    },
-
-    // 6. IRRIGATION
-    {
-        name: "Irrigation",
-        emoji: "💧",
-        base: 25,
-        unit: "piece",
-        stock: 150,
-
-        items: [
-            "Drip Pipe",
-            "Drip Emitter",
-            "Sprinkler Head",
-            "Micro Sprinkler",
-            "PVC Connector",
-            "Filter Unit",
-            "Water Timer",
-            "Garden Hose",
-            "Hose Connector",
-            "Venturi Injector",
-            "Drip Lateral",
-            "Mainline Pipe",
-            "End Cap",
-            "Irrigation Valve",
-            "Mini Sprinkler",
-            "Rain Gun",
-            "Watering Nozzle",
-            "Pipe Clamp",
-            "Grommet",
-            "Irrigation Starter Kit"
-        ]
-    }
+  // IRRIGATION
+  {
+    id: 25,
+    name: "Drip Irrigation Kit",
+    category: "Irrigation",
+    price: 450,
+    unit: "kit",
+    stock: 25,
+    emoji: "💧",
+    description: "Water saving irrigation kit."
+  }
 
 ];
 
-// ========================================
-// GENERATE 200 LISTINGS PER CATEGORY
-// ========================================
-
-const PRODUCTS = [];
-
-let productId = 1;
-
-CATEGORY_CONFIG.forEach((category, categoryIndex) => {
-
-    for (let i = 0; i < 200; i++) {
-
-        const itemIndex = i % category.items.length;
-
-        const typeNumber =
-            Math.floor(i / category.items.length) + 1;
-
-        const productName =
-            category.items[itemIndex] +
-            (typeNumber > 1 ? " - Type " + typeNumber : "");
-
-        const productPrice =
-            category.base +
-            (i % 17) * 11 +
-            categoryIndex * 7;
-
-        const productStock =
-            Math.max(
-                0,
-                category.stock - (i % 31) * 2
-            );
-
-        let packSize;
-
-        if (category.unit === "kg") {
-
-            packSize =
-                i % 2 === 0 ? "1 kg pack" : "5 kg pack";
-
-        } else if (category.unit === "litre") {
-
-            packSize =
-                i % 2 === 0 ? "1 litre bottle" : "500 ml bottle";
-
-        } else {
-
-            packSize = "1 piece";
-
-        }
-
-        const product = {
-
-            id: productId++,
-
-            name: productName,
-
-            category: category.name,
-
-            emoji: category.emoji,
-
-            price: productPrice,
-
-            unit: category.unit,
-
-            stock: productStock,
-
-            pack: packSize,
-
-            sku:
-                "AG" +
-                (categoryIndex + 1) +
-                "-" +
-                (i + 1),
-
-            description:
-                "Sample catalogue listing. Check the supplier label and instructions before use."
-
-        };
-
-        PRODUCTS.push(product);
-
-    }
-
-});
-
-// ========================================
-// PRODUCT DATABASE COMPLETED
-// ========================================
-
-console.log("AgroMart Product Database Loaded");
-
-console.log(
-    "Total Products: " + PRODUCTS.length
-);
-
-console.log(
-    "Total Categories: " + CATEGORY_CONFIG.length
-);
+console.log("AgroMart products loaded:", PRODUCTS.length);
