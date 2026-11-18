@@ -1,1008 +1,906 @@
-// ==========================================
-// AGROMART MAIN APPLICATION
-// ==========================================
+/* ==========================================
+   AGROMART - MAIN APPLICATION
+   FRONTEND JAVASCRIPT
+========================================== */
 
-const $ = id => document.getElementById(id);
+// 1. APPLICATION SETTINGS
 
-const RATE = 3;
+const SHOP_NAME = "AgroMart";
 
-// Demo warehouse location: Tiptur
-const WAREHOUSE = {
-    lat: 13.2563,
-    lon: 76.4770
-};
-
-let user = JSON.parse(
-    localStorage.getItem("agromartUser") || "null"
+let cartItems = JSON.parse(
+    localStorage.getItem("agromart_cart") || "[]"
 );
 
-let cart = JSON.parse(
-    localStorage.getItem("agromartCart") || "[]"
+let currentUser = JSON.parse(
+    localStorage.getItem("agromart_user") || "null"
 );
 
-let category = "All";
-let picked = null;
-let estimate = null;
+let selectedProduct = null;
+let pendingOrder = null;
+let selectedCategory = "All";
 
+// 2. HELPER FUNCTIONS
 
-// ==========================================
-// COMMON FUNCTIONS
-// ==========================================
-
-function money(amount) {
-    return "₹" + Number(amount).toFixed(2);
+function getElement(id) {
+    return document.getElementById(id);
 }
 
-function esc(value) {
-    return String(value ?? "").replace(/[&<>"']/g, c => ({
+function escapeHTML(value) {
+    return String(value).replace(/[&<>"']/g, char => ({
         "&": "&amp;",
         "<": "&lt;",
         ">": "&gt;",
         '"': "&quot;",
         "'": "&#39;"
-    }[c]));
+    })[char]);
 }
 
-function toast(message) {
-    $("toast").textContent = message;
-    $("toast").classList.add("show");
-
-    setTimeout(() => {
-        $("toast").classList.remove("show");
-    }, 2300);
+function saveCart() {
+    localStorage.setItem(
+        "agromart_cart",
+        JSON.stringify(cartItems)
+    );
 }
 
-function views(id) {
-    document.querySelectorAll(".view").forEach(v => {
-        v.hidden = true;
+function showToast(message) {
+    const toast = getElement("toast");
+
+    if (!toast) {
+        alert(message);
+        return;
+    }
+
+    toast.textContent = message;
+    toast.hidden = false;
+
+    clearTimeout(window.agroToastTimer);
+
+    window.agroToastTimer = setTimeout(() => {
+        toast.hidden = true;
+    }, 2500);
+}
+
+// 3. PAGE NAVIGATION
+
+function showView(viewId) {
+    document.querySelectorAll(".view").forEach(section => {
+        section.hidden = section.id !== viewId;
     });
-
-    $(id).hidden = false;
 
     window.scrollTo(0, 0);
 }
 
 function home() {
-    views("home");
+    showView("home");
+    displayProducts();
 }
-
-
-// ==========================================
-// CART COUNT
-// ==========================================
-
-function count() {
-    $("cartCount").textContent = cart.reduce(
-        (sum, item) => sum + item.qty,
-        0
-    );
-
-    localStorage.setItem(
-        "agromartCart",
-        JSON.stringify(cart)
-    );
-}
-
-
-// ==========================================
-// CATEGORY DISPLAY
-// ==========================================
-
-function categories() {
-
-    $("nav").innerHTML =
-        `<button class="active" onclick="filter('All')">
-            All products
-        </button>` +
-
-        CATEGORY_CONFIG.map(c => `
-            <button onclick="filter('${esc(c.name)}')">
-                ${c.emoji} ${esc(c.name)}
-            </button>
-        `).join("");
-
-    $("cats").innerHTML =
-        CATEGORY_CONFIG.map(c => `
-            <button class="cat"
-                onclick="filter('${esc(c.name)}')">
-
-                <b>${c.emoji}</b>
-
-                ${esc(c.name)}
-
-                <small>200 listings</small>
-
-            </button>
-        `).join("");
-}
-
-
-// ==========================================
-// PRODUCT CARD
-// ==========================================
-
-function card(p) {
-
-    return `
-        <article class="card">
-
-            <div class="pic"
-                onclick="detail(${p.id})">
-
-                ${p.emoji}
-
-            </div>
-
-            <div class="info">
-
-                <small>${esc(p.category)}</small>
-
-                <h3 onclick="detail(${p.id})">
-                    ${esc(p.name)}
-                </h3>
-
-                <p class="muted">
-                    Stock: ${p.stock} ${p.unit}
-                </p>
-
-                <div class="price">
-                    ${money(p.price)}
-                    <small>/ ${p.unit}</small>
-                </div>
-
-                <small>${esc(p.pack)}</small>
-
-                <div class="actions">
-
-                    <button class="light"
-                        onclick="detail(${p.id})">
-                        Details
-                    </button>
-
-                    <button
-                        ${p.stock <= 0 ? "disabled" : ""}
-                        onclick="buy(${p.id})">
-                        Buy now
-                    </button>
-
-                </div>
-
-            </div>
-
-        </article>
-    `;
-}
-
-
-// ==========================================
-// DISPLAY PRODUCTS
-// ==========================================
-
-function render(list) {
-
-    let sort = $("sort").value;
-
-    if (sort === "low") {
-        list.sort((a, b) => a.price - b.price);
-    }
-
-    if (sort === "high") {
-        list.sort((a, b) => b.price - a.price);
-    }
-
-    if (sort === "name") {
-        list.sort((a, b) =>
-            a.name.localeCompare(b.name)
-        );
-    }
-
-    $("products").innerHTML =
-        list.slice(0, 80).map(card).join("");
-
-    $("count").textContent =
-        `Showing ${Math.min(list.length, 80)} of ${list.length} listings`;
-
-    $("empty").hidden = list.length > 0;
-}
-
-
-// ==========================================
-// CATEGORY FILTER
-// ==========================================
-
-function filter(c) {
-
-    category = c;
-
-    document.querySelectorAll("#nav button").forEach(b => {
-        b.classList.toggle(
-            "active",
-            c === "All"
-                ? b.textContent.includes("All")
-                : b.textContent.includes(c)
-        );
-    });
-
-    $("search").value = "";
-
-    $("heading").textContent =
-        c === "All" ? "All products" : c;
-
-    render(
-        PRODUCTS.filter(p =>
-            c === "All" || p.category === c
-        )
-    );
-
-    home();
-
-    $("products").scrollIntoView({
-        behavior: "smooth"
-    });
-}
-
-
-// ==========================================
-// SEARCH PRODUCTS
-// ==========================================
-
-function search() {
-
-    let q = $("search").value.toLowerCase().trim();
-
-    let result = PRODUCTS.filter(p => {
-
-        let matchCategory =
-            category === "All" ||
-            p.category === category;
-
-        let matchName =
-            `${p.name} ${p.category} ${p.sku}`
-                .toLowerCase()
-                .includes(q);
-
-        return matchCategory && matchName;
-    });
-
-    $("heading").textContent =
-        q ? "Search results" : "All products";
-
-    render(result);
-}
-
-
-// ==========================================
-// PRODUCT DETAILS
-// ==========================================
-
-function detail(id) {
-
-    let p = PRODUCTS.find(x => x.id === id);
-
-    if (!p) return;
-
-    picked = p;
-
-    views("detail");
-
-    $("detail").innerHTML = `
-
-        <button class="back" onclick="home()">
-            ← Back to shopping
-        </button>
-
-        <div class="detail">
-
-            <div class="detailPic">
-                ${p.emoji}
-            </div>
-
-            <div>
-
-                <small>${esc(p.category)}</small>
-
-                <h1>${esc(p.name)}</h1>
-
-                <p>${esc(p.description)}</p>
-
-                <h2 class="price">
-                    ${money(p.price)} / ${p.unit}
-                </h2>
-
-                <p>
-                    Available stock:
-                    <b>${p.stock} ${p.unit}</b>
-                </p>
-
-                <p>Pack: ${esc(p.pack)}</p>
-
-                <p>SKU: ${esc(p.sku)}</p>
-
-                <p class="warning">
-                    Sample product information.
-                    Verify actual stock and supplier details.
-                </p>
-
-                <button class="light"
-                    onclick="add(${p.id})">
-                    Add to cart
-                </button>
-
-                <button onclick="buy(${p.id})">
-                    Buy now
-                </button>
-
-            </div>
-
-        </div>
-    `;
-}
-
-
-// ==========================================
-// BUY NOW CONFIRMATION
-// ==========================================
-
-function buy(id) {
-
-    let p = PRODUCTS.find(x => x.id === id);
-
-    if (!p || p.stock <= 0) {
-        return toast("Product unavailable");
-    }
-
-    picked = p;
-
-    $("modalText").textContent =
-        `Do you want to buy ${p.name} for ${money(p.price)} per ${p.unit}?`;
-
-    $("modal").hidden = false;
-}
-
-
-// ==========================================
-// YES OR NO
-// ==========================================
-
-function confirmBuy(yes) {
-
-    $("modal").hidden = true;
-
-    if (!yes) {
-
-        picked = null;
-
-        return toast("Purchase cancelled");
-    }
-
-    // Quantity comes before login.
-    quantity(picked);
-}
-
-
-// ==========================================
-// PRODUCT QUANTITY
-// ==========================================
-
-function quantity(p) {
-
-    picked = p;
-
-    estimate = null;
-
-    views("quantity");
-
-    $("quantity").innerHTML = `
-
-        <button class="back" onclick="home()">
-            ← Back
-        </button>
-
-        <div class="panel">
-
-            <h2>${p.emoji} ${esc(p.name)}</h2>
-
-            <p>
-                Available stock:
-                ${p.stock} ${p.unit}
-            </p>
-
-            <p>
-                Price:
-                ${money(p.price)} per ${p.unit}
-            </p>
-
-            <label>
-                Enter quantity (${p.unit})
-
-                <input
-                    class="quantityInput"
-                    id="qty"
-                    type="number"
-                    min="0.01"
-                    max="${p.stock}"
-                    step="0.01"
-                    placeholder="Enter quantity"
-                >
-            </label>
-
-            <button onclick="calc()">
-                Calculate estimated bill
-            </button>
-
-            <div id="estimate"></div>
-
-        </div>
-    `;
-}
-
-
-// ==========================================
-// ESTIMATED BILL
-// ==========================================
-
-function calc() {
-
-    let q = Number($("qty").value);
-
-    if (!q || q <= 0 || q > picked.stock) {
-
-        return toast(
-            "Enter a valid quantity within available stock"
-        );
-    }
-
-    estimate = {
-        id: picked.id,
-        qty: q
-    };
-
-    let subtotal = q * picked.price;
-
-    $("estimate").innerHTML = `
-
-        <div class="bill">
-
-            <h3>Estimated bill</h3>
-
-            <div class="line">
-
-                <span>
-                    ${esc(picked.name)} × ${q} ${picked.unit}
-                </span>
-
-                <b>${money(subtotal)}</b>
-
-            </div>
-
-            <div class="line total">
-
-                <span>Product subtotal</span>
-
-                <span>${money(subtotal)}</span>
-
-            </div>
-
-            <p class="muted">
-                Delivery charge is calculated
-                after entering your address.
-            </p>
-
-            <button onclick="checkoutSingle()">
-                Continue to checkout
-            </button>
-
-        </div>
-    `;
-}
-
-
-// ==========================================
-// BUY SINGLE PRODUCT
-// ==========================================
-
-function checkoutSingle() {
-
-    if (!estimate) return;
-
-    cart = [estimate];
-
-    count();
-
-    checkout();
-}
-
-
-// ==========================================
-// ADD TO CART
-// ==========================================
-
-function add(id) {
-
-    let p = PRODUCTS.find(x => x.id === id);
-
-    let item = cart.find(x => x.id === id);
-
-    if (item) {
-
-        if (item.qty + 1 > p.stock) {
-            return toast("Maximum available stock reached");
-        }
-
-        item.qty++;
-
-    } else {
-
-        if (p.stock <= 0) {
-            return toast("Product unavailable");
-        }
-
-        cart.push({
-            id: id,
-            qty: 1
-        });
-    }
-
-    count();
-
-    toast("Product added to cart");
-}
-
-
-// ==========================================
-// CART PAGE
-// ==========================================
 
 function cartPage() {
+    renderCart();
+    showView("cart");
+}
 
-    views("cart");
+function account() {
+    renderAccount();
+    showView("account");
+}
 
-    if (!cart.length) {
+// 4. DISPLAY PRODUCTS
 
-        $("cart").innerHTML = `
+function displayProducts(list = PRODUCTS) {
+    const container = getElement("products");
 
-            <h1>Your cart is empty</h1>
+    if (!container) return;
 
-            <button onclick="home()">
-                Shop now
-            </button>
-        `;
+    container.innerHTML = "";
 
+    if (list.length === 0) {
+        getElement("empty").hidden = false;
         return;
     }
 
-    let total = 0;
+    getElement("empty").hidden = true;
 
-    let html = `
-        <button class="back" onclick="home()">
-            ← Continue shopping
-        </button>
+    list.forEach(product => {
+        const card = document.createElement("article");
 
-        <h1>Shopping cart</h1>
+        card.className = "product-card";
+
+        card.innerHTML = `
+            <div class="product-image">
+                ${escapeHTML(product.emoji || "🌱")}
+            </div>
+
+            <h3>${escapeHTML(product.name)}</h3>
+
+            <p>${escapeHTML(product.category)}</p>
+
+            <h3>
+                ₹${Number(product.price).toFixed(2)}
+                / ${escapeHTML(product.unit)}
+            </h3>
+
+            <small>
+                Stock: ${Number(product.stock)}
+                ${escapeHTML(product.unit)}
+            </small>
+
+            <button class="view-product">
+                View Details
+            </button>
+
+            <button class="add-product">
+                Add to Cart
+            </button>
+        `;
+
+        card.querySelector(".view-product").onclick = () => {
+            productDetails(product.id);
+        };
+
+        card.querySelector(".add-product").onclick = () => {
+            addToCart(product.id);
+        };
+
+        container.appendChild(card);
+    });
+
+    if (getElement("heading")) {
+        getElement("heading").textContent =
+            selectedCategory === "All"
+                ? "All products"
+                : selectedCategory;
+    }
+
+    if (getElement("count")) {
+        getElement("count").textContent =
+            `${list.length} products available`;
+    }
+}
+
+// 5. DISPLAY CATEGORIES
+
+function displayCategories() {
+    const container = getElement("cats");
+
+    if (!container) return;
+
+    const categories = [
+        "All",
+        ...new Set(PRODUCTS.map(p => p.category))
+    ];
+
+    container.innerHTML = "";
+
+    categories.forEach(category => {
+        const button = document.createElement("button");
+
+        button.textContent = category;
+
+        button.className =
+            category === selectedCategory ? "active" : "";
+
+        button.onclick = () => {
+            selectedCategory = category;
+
+            const results = category === "All"
+                ? PRODUCTS
+                : PRODUCTS.filter(
+                    p => p.category === category
+                );
+
+            displayCategories();
+            displayProducts(results);
+        };
+
+        container.appendChild(button);
+    });
+}
+
+// 6. SEARCH PRODUCTS
+
+function searchProducts(keyword) {
+    const search = keyword.trim().toLowerCase();
+
+    const results = PRODUCTS.filter(product =>
+        product.name.toLowerCase().includes(search) ||
+        product.category.toLowerCase().includes(search)
+    );
+
+    selectedCategory = "All";
+    displayCategories();
+    displayProducts(results);
+
+    showView("home");
+}
+
+function setupSearch() {
+    const form = getElement("searchForm");
+
+    if (!form) return;
+
+    form.addEventListener("submit", event => {
+        event.preventDefault();
+
+        searchProducts(
+            getElement("search").value
+        );
+    });
+}
+
+// 7. PRODUCT DETAILS
+
+function productDetails(id) {
+    const product = PRODUCTS.find(p => p.id === id);
+
+    if (!product) return;
+
+    selectedProduct = product;
+
+    const section = getElement("detail");
+
+    section.innerHTML = `
+        <div class="product-details">
+
+            <h2>
+                ${escapeHTML(product.emoji || "🌱")}
+                ${escapeHTML(product.name)}
+            </h2>
+
+            <p>
+                Category:
+                ${escapeHTML(product.category)}
+            </p>
+
+            <h3>
+                ₹${Number(product.price).toFixed(2)}
+                / ${escapeHTML(product.unit)}
+            </h3>
+
+            <p>
+                ${escapeHTML(product.description || "")}
+            </p>
+
+            <p>
+                Available stock:
+                ${Number(product.stock)}
+                ${escapeHTML(product.unit)}
+            </p>
+
+            <label>Quantity:</label>
+
+            <input
+                type="number"
+                id="productQuantity"
+                min="1"
+                max="${Number(product.stock)}"
+                value="1"
+            >
+
+            <button onclick="addSelectedProduct()">
+                Add to Cart
+            </button>
+
+            <button onclick="home()">
+                Continue Shopping
+            </button>
+
+        </div>
     `;
 
-    cart.forEach(item => {
+    showView("detail");
+}
 
-        let p = PRODUCTS.find(x => x.id === item.id);
+function addSelectedProduct() {
+    if (!selectedProduct) return;
 
-        if (!p) return;
+    const quantity = Number(
+        getElement("productQuantity").value
+    );
 
-        total += p.price * item.qty;
+    if (
+        !Number.isInteger(quantity) ||
+        quantity < 1 ||
+        quantity > selectedProduct.stock
+    ) {
+        showToast("Please enter a valid quantity.");
+        return;
+    }
+
+    addToCart(selectedProduct.id, quantity);
+}
+
+// 8. ADD TO CART
+
+function addToCart(id, quantity = 1) {
+    const product = PRODUCTS.find(p => p.id === id);
+
+    if (!product) return;
+
+    const existing = cartItems.find(
+        item => item.id === id
+    );
+
+    const currentQuantity = existing
+        ? existing.quantity
+        : 0;
+
+    if (currentQuantity + quantity > product.stock) {
+        showToast("Insufficient stock available.");
+        return;
+    }
+
+    if (existing) {
+        existing.quantity += quantity;
+    } else {
+        cartItems.push({
+            id: id,
+            quantity: quantity
+        });
+    }
+
+    saveCart();
+    updateCartCount();
+
+    showToast("Product added to cart!");
+}
+
+// 9. UPDATE CART COUNT
+
+function updateCartCount() {
+    const count = cartItems.reduce(
+        (total, item) => total + item.quantity,
+        0
+    );
+
+    const element = getElement("cartCount");
+
+    if (element) {
+        element.textContent = count;
+    }
+}
+
+// 10. DISPLAY CART
+
+function renderCart() {
+    const container = getElement("cart");
+
+    if (!container) return;
+
+    if (cartItems.length === 0) {
+        container.innerHTML = `
+            <h2>Your Shopping Cart</h2>
+            <p>Your cart is empty.</p>
+            <button onclick="home()">
+                Continue Shopping
+            </button>
+        `;
+        return;
+    }
+
+    let subtotal = 0;
+
+    let html = `
+        <h2>Your Shopping Cart</h2>
+    `;
+
+    cartItems.forEach(item => {
+        const product = PRODUCTS.find(
+            p => p.id === item.id
+        );
+
+        if (!product) return;
+
+        const amount = product.price * item.quantity;
+
+        subtotal += amount;
 
         html += `
+            <div class="cart-item">
 
-            <div class="line">
+                <h3>${escapeHTML(product.name)}</h3>
 
-                <span>
-                    <b>${esc(p.name)}</b>
-                    <br>
-                    <small>
-                        ${money(p.price)} per ${p.unit}
-                    </small>
-                </span>
+                <p>
+                    ₹${Number(product.price).toFixed(2)}
+                    × ${item.quantity}
+                    = ₹${amount.toFixed(2)}
+                </p>
 
-                <span>
+                <button onclick="changeQuantity(${item.id}, -1)">
+                    -
+                </button>
 
-                    <button class="light"
-                        onclick="changeQty(${p.id},-1)">
-                        −
-                    </button>
+                <span>${item.quantity}</span>
 
-                    ${item.qty}
+                <button onclick="changeQuantity(${item.id}, 1)">
+                    +
+                </button>
 
-                    <button class="light"
-                        onclick="changeQty(${p.id},1)">
-                        +
-                    </button>
-
-                </span>
-
-                <b>
-                    ${money(p.price * item.qty)}
-                </b>
+                <button onclick="removeFromCart(${item.id})">
+                    Remove
+                </button>
 
             </div>
         `;
     });
 
     html += `
+        <hr>
 
-        <div class="bill">
+        <h3>Subtotal: ₹${subtotal.toFixed(2)}</h3>
 
-            <h2>Subtotal: ${money(total)}</h2>
+        <p>
+            Delivery charge will be calculated
+            after address verification.
+        </p>
 
-            <p class="muted">
-                Delivery charge calculated at checkout.
-            </p>
+        <button onclick="home()">
+            Continue Shopping
+        </button>
 
-            <button onclick="checkout()">
-                Proceed to checkout
-            </button>
-
-        </div>
+        <button onclick="startCheckout()">
+            Proceed to Checkout
+        </button>
     `;
 
-    $("cart").innerHTML = html;
+    container.innerHTML = html;
 }
 
+// 11. CHANGE QUANTITY
 
-// ==========================================
-// CHANGE CART QUANTITY
-// ==========================================
+function changeQuantity(id, change) {
+    const item = cartItems.find(
+        p => p.id === id
+    );
 
-function changeQty(id, change) {
+    const product = PRODUCTS.find(
+        p => p.id === id
+    );
 
-    let item = cart.find(x => x.id === id);
+    if (!item || !product) return;
 
-    let p = PRODUCTS.find(x => x.id === id);
+    const newQuantity = item.quantity + change;
 
-    if (!item || !p) return;
-
-    let newQty = item.qty + change;
-
-    if (newQty <= 0) {
-
-        cart = cart.filter(x => x.id !== id);
-
-    } else if (newQty <= p.stock) {
-
-        item.qty = newQty;
-
-    } else {
-
-        return toast("Maximum stock reached");
+    if (newQuantity <= 0) {
+        removeFromCart(id);
+        return;
     }
 
-    count();
+    if (newQuantity > product.stock) {
+        showToast("Maximum stock reached.");
+        return;
+    }
 
-    cartPage();
+    item.quantity = newQuantity;
+
+    saveCart();
+    updateCartCount();
+    renderCart();
 }
 
+// 12. REMOVE PRODUCT
 
-// ==========================================
-// LOGIN PAGE
-// ==========================================
+function removeFromCart(id) {
+    cartItems = cartItems.filter(
+        item => item.id !== id
+    );
 
-function account() {
+    saveCart();
+    updateCartCount();
+    renderCart();
 
-    if (user) {
+    showToast("Product removed.");
+}
 
-        views("account");
+// 13. CUSTOMER ACCOUNT
 
-        $("account").innerHTML = `
+function renderAccount() {
+    const section = getElement("account");
 
-            <button class="back" onclick="home()">
-                ← Back
+    if (currentUser) {
+        section.innerHTML = `
+            <h2>My Account</h2>
+
+            <p>
+                Name: ${escapeHTML(currentUser.name)}
+            </p>
+
+            <p>
+                Mobile: ${escapeHTML(currentUser.phone)}
+            </p>
+
+            <button onclick="logoutCustomer()">
+                Logout
             </button>
 
-            <div class="form">
-
-                <h2>Hello ${esc(user.name)}</h2>
-
-                <p>${esc(user.email)}</p>
-
-                <button onclick="logout()">
-                    Logout
-                </button>
-
-            </div>
+            <button onclick="home()">
+                Home
+            </button>
         `;
-
-    } else {
-
-        login();
-    }
-}
-
-
-// ==========================================
-// LOGIN
-// ==========================================
-
-function login() {
-
-    views("account");
-
-    $("account").innerHTML = `
-
-        <button class="back" onclick="home()">
-            ← Back
-        </button>
-
-        <div class="form">
-
-            <h1>Login to AgroMart</h1>
-
-            <p>
-                Browse freely. Login is needed
-                when placing an order.
-            </p>
-
-            <form id="loginForm">
-
-                <label>
-                    Email
-
-                    <input
-                        id="email"
-                        type="email"
-                        required
-                    >
-                </label>
-
-                <label>
-                    Password
-
-                    <input
-                        id="pass"
-                        type="password"
-                        required
-                    >
-                </label>
-
-                <button>Login (demo)</button>
-
-            </form>
-
-            <p>
-                New customer?
-                <button class="light" onclick="register()">
-                    Register
-                </button>
-            </p>
-
-            <p class="warning">
-                Demo login only. Do not use a real password.
-                Secure authentication requires a backend.
-            </p>
-
-        </div>
-    `;
-
-    $("loginForm").onsubmit = e => {
-
-        e.preventDefault();
-
-        let email = $("email").value;
-
-        user = {
-            email: email,
-            name: localStorage.getItem("name:" + email)
-                || email.split("@")[0]
-        };
-
-        localStorage.setItem(
-            "agromartUser",
-            JSON.stringify(user)
-        );
-
-        $("userLabel").textContent = user.name;
-
-        toast("Demo login successful");
-
-        checkout();
-    };
-}
-
-
-// ==========================================
-// REGISTRATION
-// ==========================================
-
-function register() {
-
-    views("account");
-
-    $("account").innerHTML = `
-
-        <button class="back" onclick="login()">
-            ← Back
-        </button>
-
-        <div class="form">
-
-            <h1>Create account</h1>
-
-            <form id="regForm">
-
-                <label>
-                    Name
-
-                    <input id="rname" required>
-                </label>
-
-                <label>
-                    Email
-
-                    <input id="remail" type="email" required>
-                </label>
-
-                <label>
-                    Mobile number
-
-                    <input
-                        id="rphone"
-                        pattern="[0-9]{10}"
-                        required
-                    >
-                </label>
-
-                <label>
-                    Password
-
-                    <input
-                        id="rpass"
-                        type="password"
-                        minlength="8"
-                        required
-                    >
-                </label>
-
-                <button>Create demo account</button>
-
-            </form>
-
-            <p class="warning">
-                Demo registration only.
-                No password is stored or securely authenticated.
-            </p>
-
-        </div>
-    `;
-
-    $("regForm").onsubmit = e => {
-
-        e.preventDefault();
-
-        let email = $("remail").value;
-
-        localStorage.setItem(
-            "name:" + email,
-            $("rname").value
-        );
-
-        user = {
-            email: email,
-            name: $("rname").value,
-            phone: $("rphone").value
-        };
-
-        localStorage.setItem(
-            "agromartUser",
-            JSON.stringify(user)
-        );
-
-        $("userLabel").textContent = user.name;
-
-        toast("Demo account created");
-
-        checkout();
-    };
-}
-
-
-// ==========================================
-// LOGOUT
-// ==========================================
-
-function logout() {
-
-    user = null;
-
-    localStorage.removeItem("agromartUser");
-
-    $("userLabel").textContent = "Login";
-
-    home();
-}
-
-
-// ==========================================
-// CHECKOUT PAGE
-// ==========================================
-
-function checkout() {
-
-    if (!cart.length) {
-        return toast("Your cart is empty");
-    }
-
-    if (!user) {
-
-        login();
-
-        toast("Login is required to place your order");
 
         return;
     }
 
-    views("checkout");
+    section.innerHTML = `
+        <h2>Login / Register</h2>
 
-    $("checkout").innerHTML = `
+        <form id="loginForm">
 
-        <button class="back" onclick="cartPage()">
-            ← Back to cart
+            <label>Customer Name</label>
+
+            <input
+                type="text"
+                id="customerName"
+                required
+                placeholder="Enter your name"
+            >
+
+            <label>Mobile Number</label>
+
+            <input
+                type="tel"
+                id="customerPhone"
+                required
+                pattern="[6-9][0-9]{9}"
+                maxlength="10"
+                placeholder="10-digit mobile number"
+            >
+
+            <button type="submit">
+                Continue
+            </button>
+
+        </form>
+    `;
+
+    getElement("loginForm").onsubmit = event => {
+        event.preventDefault();
+
+        currentUser = {
+            name: getElement("customerName").value.trim(),
+            phone: getElement("customerPhone").value.trim()
+        };
+
+        localStorage.setItem(
+            "agromart_user",
+            JSON.stringify(currentUser)
+        );
+
+        updateUserLabel();
+        showToast("Account saved successfully!");
+
+        renderAccount();
+    };
+}
+
+function updateUserLabel() {
+    const label = getElement("userLabel");
+
+    if (label) {
+        label.textContent = currentUser
+            ? currentUser.name
+            : "Login";
+    }
+}
+
+function logoutCustomer() {
+    currentUser = null;
+
+    localStorage.removeItem("agromart_user");
+
+    updateUserLabel();
+    renderAccount();
+
+    showToast("Logged out successfully.");
+}
+
+// 14. CHECKOUT
+
+function startCheckout() {
+    if (cartItems.length === 0) {
+        showToast("Your cart is empty.");
+        return;
+    }
+
+    if (!currentUser) {
+        showToast("Please login before placing your order.");
+        account();
+        return;
+    }
+
+    renderCheckout();
+    showView("checkout");
+}
+
+function renderCheckout() {
+    const section = getElement("checkout");
+
+    let subtotal = 0;
+
+    cartItems.forEach(item => {
+        const product = PRODUCTS.find(
+            p => p.id === item.id
+        );
+
+        if (product) {
+            subtotal += product.price * item.quantity;
+        }
+    });
+
+    section.innerHTML = `
+        <h2>Checkout</h2>
+
+        <h3>Customer Details</h3>
+
+        <p>Name: ${escapeHTML(currentUser.name)}</p>
+
+        <p>Mobile: ${escapeHTML(currentUser.phone)}</p>
+
+        <form id="checkoutForm">
+
+            <label>Delivery Address</label>
+
+            <textarea
+                id="deliveryAddress"
+                required
+                placeholder="Enter complete delivery address"
+            ></textarea>
+
+            <h3>Order Subtotal</h3>
+
+            <h2>₹${subtotal.toFixed(2)}</h2>
+
+            <p>
+                Delivery charge requires address-based
+                distance verification by the backend.
+            </p>
+
+            <label>Payment Method</label>
+
+            <select id="paymentMethod" required>
+
+                <option value="">Select Payment</option>
+
+                <option value="UPI">UPI</option>
+
+                <option value="Card">
+                    Debit / Credit Card
+                </option>
+
+                <option value="COD">
+                    Cash on Delivery
+                </option>
+
+            </select>
+
+            <button type="submit">
+                Place Order
+            </button>
+
+            <button type="button" onclick="cartPage()">
+                Back to Cart
+            </button>
+
+        </form>
+    `;
+
+    getElement("checkoutForm").onsubmit = event => {
+        event.preventDefault();
+
+        const address = getElement(
+            "deliveryAddress"
+        ).value.trim();
+
+        const payment = getElement(
+            "paymentMethod"
+        ).value;
+
+        if (!address || !payment) {
+            showToast("Complete all checkout details.");
+            return;
+        }
+
+        if (payment !== "COD") {
+            showToast(
+                "Online payment gateway will be connected in the backend."
+            );
+            return;
+        }
+
+        pendingOrder = {
+            id: "AGRO" + Date.now(),
+            customer: currentUser.name,
+            phone: currentUser.phone,
+            address: address,
+            products: cartItems.map(item => {
+                const p = PRODUCTS.find(
+                    product => product.id === item.id
+                );
+
+                return {
+                    name: p.name,
+                    quantity: item.quantity,
+                    price: p.price
+                };
+            }),
+            subtotal: subtotal,
+            deliveryCharge: null,
+            payment: "Cash on Delivery",
+            date: new Date().toLocaleString(),
+            status: "Order Confirmed"
+        };
+
+        const modal = getElement("modal");
+
+        getElement("modalText").textContent =
+            `Confirm your COD order of ₹${subtotal.toFixed(2)}? Delivery charge will be verified separately.`;
+
+        modal.hidden = false;
+    };
+}
+
+// 15. CONFIRM PURCHASE
+
+function confirmBuy(confirmed) {
+    const modal = getElement("modal");
+
+    modal.hidden = true;
+
+    if (!confirmed || !pendingOrder) {
+        pendingOrder = null;
+        return;
+    }
+
+    const orders = JSON.parse(
+        localStorage.getItem("agromart_orders") || "[]"
+    );
+
+    orders.push(pendingOrder);
+
+    localStorage.setItem(
+        "agromart_orders",
+        JSON.stringify(orders)
+    );
+
+    showInvoice(pendingOrder);
+
+    cartItems = [];
+
+    saveCart();
+    updateCartCount();
+
+    pendingOrder = null;
+}
+
+// 16. ORDER INVOICE
+
+function showInvoice(order) {
+    const section = getElement("invoice");
+
+    const productsHTML = order.products.map(p => `
+        <p>
+            ${escapeHTML(p.name)}
+            × ${p.quantity}
+            = ₹${(p.price * p.quantity).toFixed(2)}
+        </p>
+    `).join("");
+
+    section.innerHTML = `
+        <h2>🌱 AgroMart</h2>
+
+        <h2>Order Confirmed!</h2>
+
+        <p>Order ID: ${escapeHTML(order.id)}</p>
+
+        <p>Customer: ${escapeHTML(order.customer)}</p>
+
+        <p>Mobile: ${escapeHTML(order.phone)}</p>
+
+        <p>Address: ${escapeHTML(order.address)}</p>
+
+        <p>Date: ${escapeHTML(order.date)}</p>
+
+        <hr>
+
+        <h3>Ordered Products</h3>
+
+        ${productsHTML}
+
+        <hr>
+
+        <h3>
+            Subtotal: ₹${order.subtotal.toFixed(2)}
+        </h3>
+
+        <p>
+            Delivery charge: To be verified
+        </p>
+
+        <p>Payment: Cash on Delivery</p>
+
+        <h3>Status: Order Confirmed</h3>
+
+        <button onclick="home()">
+            Continue Shopping
         </button>
 
-        <h1>Delivery & Payment</h1>
+        <button onclick="window.print()">
+            Print Invoice
+        </button>
+    `;
 
-        <form class="form" id="deliveryForm">
+    showView("invoice");
+}
 
-            <label>
-                Full name
+// 17. SORT PRODUCTS
 
-                <input
-                    id="custName"
-                    value="${esc(user.name || "")}"
-                    required
-                >
-            </label>
+function setupSorting() {
+    const sort = getElement("sort");
 
-            <label>
-                Mobile number
+    if (!sort) return;
 
-                <input
-                    id="custPhone"
-                    value="${esc(user.phone || "")}"
-                    pattern="[0-9]{10}"
-                    required
-                >
-            </label>
+    sort.addEventListener("change", event => {
+        const sorted = [...PRODUCTS];
 
-            <label>
-                Full delivery address
+        if (event.target.value === "low") {
+            sorted.sort((a, b) => a.price - b.price);
+        }
 
-                <textarea
-                    id="address"
-                    required
-                    placeholder="House, street, village, district, state"
-                ></textarea>
-            </label>
+        if (event.target.value === "high") {
+            sorted.sort((a, b) => b.price - a.price);
+        }
 
-            <label>
-                PIN code
+        if (event.target.value === "name") {
+            sorted.sort((a, b) =>
+                a.name.localeCompare(b.name)
+            );
+        }
 
-                <input
-                    id="pin"
-                    pattern="[0-9]{6}"
-                    required
-                    placeholder="6-digit PIN code"
-                >
-            </label>
+        if (event.target.value === "featured") {
+            selectedCategory = "All";
+            displayCategories();
+            displayProducts();
+            return;
+        }
 
-            <h3>Choose payment method</h3>
+        selectedCategory = "All";
+        displayCategories();
+        displayProducts(sorted);
+    });
+}
 
-            <label class="radio">
-                <input type="radio" name="pay"
-                    value="UPI" required>
-                UPI
-            </label>
+// 18. INITIALIZE AGROMART
 
-            <label class="radio">
-                <input type="radio" name="pay"
-                    value="Card">
-                Debit / Credit Card
-            </label>
+function initializeAgroMart() {
 
-            <label class="radio">
-                <input type="radio" name="pay"
+    if (typeof PRODUCTS === "undefined") {
+        console.error("Products database not loaded!");
+        showToast("Product database error.");
+        return;
+    }
+
+    displayCategories();
+    displayProducts();
+
+    setupSearch();
+    setupSorting();
+
+    updateCartCount();
+    updateUserLabel();
+
+    if (getElement("year")) {
+        getElement("year").textContent =
+            new Date().getFullYear();
+    }
+
+    console.log(
+        "AgroMart loaded successfully!",
+        PRODUCTS.length,
+        "products"
+    );
+}
+
+document.addEventListener(
+    "DOMContentLoaded",
+    initializeAgroMart
+);
